@@ -72,6 +72,17 @@ function uart_recv(data) {
     print(data);
 }
 
+function init_tcm(){
+    if (uart.configure({ baud: BAUD, mode: BPS })){
+        print('UART @', BAUD, BPS);
+        // Attach UART receive handler.
+        uart.recv(uart_recv);
+    }else{
+        die();
+    }
+    read();
+}
+
 function init_wdt(){    
     Timer.set(1000, true, function() {
         if (clear_counter > 0)
@@ -105,16 +116,7 @@ function clear(){
 }
 
 function init() {
-    if (uart.configure({ baud: BAUD, mode: BPS })){
-        print('UART @', BAUD, BPS);
-    }else{
-        die();
-    }
-    
-    // Attach UART receive handler.
-    uart.recv(uart_recv);
-
-    read();
+    init_tcm();
 
     VC_BTN_GO.on("single_push", function(ev) { 
         step(SPEED,
@@ -129,6 +131,7 @@ function init() {
     VC_BTN_CLEAR.on("single_push", function(ev){
         clear();
     });
+    
     // Software auto power OFF drives.
     init_wdt();
     feed_wdt();
