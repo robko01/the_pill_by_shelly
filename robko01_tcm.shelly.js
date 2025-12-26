@@ -29,22 +29,11 @@ function free(){
     uart.write("FREE\n");
 }
 
-function clear(){
-    VC_BASE.setValue(0);
-    VC_SHOULDER.setValue(0);
-    VC_ELBOW.setValue(0);
-    VC_P.setValue(0);
-    VC_R.setValue(0);
-    VC_GRIPPER.setValue(0);
-
-    step(SPEED,0,0,0,0,0,0);
-}
-
 function step(speed_stp, base_stp, shoulder_stp, elbow_stp, p_stp, r_stp, gripper_stp){
     // step(100, 0, 0, 0, 0, 0, 0);
 
-    // Shoulder duplicated for 3rd joint.
-    let q3 = shoulder_stp + shoulder_stp
+    
+    let q3 = elbow_stp + shoulder_stp
 
     // Diff drive for wrist.
     let q4 = (p_stp + r_stp) * -1;
@@ -104,6 +93,17 @@ function feed_wdt() {
     clear_counter = CLEAR_TIME_S;
 }
 
+function clear(){
+    VC_BASE.setValue(0);
+    VC_SHOULDER.setValue(0);
+    VC_ELBOW.setValue(0);
+    VC_P.setValue(0);
+    VC_R.setValue(0);
+    VC_GRIPPER.setValue(0);
+
+    step(SPEED,0,0,0,0,0,0);
+}
+
 function init() {
     if (uart.configure({ baud: BAUD, mode: BPS })){
         print('UART @', BAUD, BPS);
@@ -124,8 +124,6 @@ function init() {
         VC_P.getValue(),
         VC_R.getValue(),
         VC_GRIPPER.getValue());
-        
-        print('OK');
     });
 
     VC_BTN_CLEAR.on("single_push", function(ev){
