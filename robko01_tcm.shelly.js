@@ -5,7 +5,6 @@ const BPS = '8N1';
 const uart = UART.get();
 var last_response = '';
 
-
 const CLEAR_TIME_S = 60;
 var clear_counter = CLEAR_TIME_S;
 var free_flag = true;
@@ -21,18 +20,24 @@ const VC_GRIPPER = Virtual.getHandle('number:205');
 const VC_BTN_GO = Virtual.getHandle('button:200');
 const VC_BTN_CLEAR = Virtual.getHandle('button:201');
 
-function read(){
+function close_gripper(){
+    uart.write("@CLOSE\n");
+}
+
+function read_arm(){
     uart.write("@READ\n");
 }
 
-function free(){
-    uart.write("FREE\n");
+function reset_arm(){
+    uart.write("@RESET\n");
+}
+
+function set_arm_speed(){
+    uart.write("@SET\n");
 }
 
 function step(speed_stp, base_stp, shoulder_stp, elbow_stp, p_stp, r_stp, gripper_stp){
-    // step(100, 0, 0, 0, 0, 0, 0);
-
-    
+    // Combined elbow and shoulder for q3.
     let q3 = elbow_stp + shoulder_stp
 
     // Diff drive for wrist.
@@ -58,6 +63,14 @@ function step(speed_stp, base_stp, shoulder_stp, elbow_stp, p_stp, r_stp, grippe
     uart.write(cmd);
 }
 
+function free(){
+    uart.write("FREE\n");
+}
+
+function home_arm(){
+    uart.write("@HOME\n");
+}
+
 function uart_recv(data) {
     if (!data || !data.length) return;
 
@@ -80,7 +93,7 @@ function init_tcm(){
     }else{
         die();
     }
-    read();
+    read_arm();
 }
 
 function init_wdt(){    
@@ -104,17 +117,6 @@ function feed_wdt() {
     clear_counter = CLEAR_TIME_S;
 }
 
-function clear(){
-    VC_BASE.setValue(0);
-    VC_SHOULDER.setValue(0);
-    VC_ELBOW.setValue(0);
-    VC_P.setValue(0);
-    VC_R.setValue(0);
-    VC_GRIPPER.setValue(0);
-
-    step(SPEED,0,0,0,0,0,0);
-}
-
 function init() {
     init_tcm();
 
@@ -129,12 +131,21 @@ function init() {
     });
 
     VC_BTN_CLEAR.on("single_push", function(ev){
-        clear();
+        VC_BASE.setValue(0);
+        VC_SHOULDER.setValue(0);
+        VC_ELBOW.setValue(0);
+        VC_P.setValue(0);
+        VC_R.setValue(0);
+        VC_GRIPPER.setValue(0);
+
+        step(SPEED,0,0,0,0,0,0);
     });
-    
+
     // Software auto power OFF drives.
-    init_wdt();
     feed_wdt();
+    init_wdt();
 }
 
 init();
+
+// step(100, 0, 0, 0, 0, 0, 0);
