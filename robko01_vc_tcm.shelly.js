@@ -32,30 +32,32 @@ function reset_arm(){
     uart.write("@RESET\n");
 }
 
-function set_arm_speed(){
-    uart.write("@SET\n");
+function set_arm_speed(velocity){
+    uart.write("@SET " + velocity + "\n");
 }
 
-function step(speed_stp, base_stp, shoulder_stp, elbow_stp, p_stp, r_stp, gripper_stp){
+function step(velocity, base_stp, shoulder_stp, elbow_stp, p_stp, r_stp, gripper_stp){
+    let scales = [1, 1, 1, 1, 1, 1]
+
     // Combined elbow and shoulder for q3.
-    let q3 = elbow_stp + shoulder_stp
+    let q3 = elbow_stp + shoulder_stp; // *1.67
 
     // Diff drive for wrist.
     let q4 = (p_stp + r_stp) * -1;
     let q5 = (p_stp - r_stp) * 1;
 
     // Gripper relative to elbow.
-    let q6 = gripper_stp - elbow_stp
+    let q6 = gripper_stp - q3;
 
     let outputs = 0;
     let cmd = "@STEP " + 
-    speed_stp + "," + 
-    base_stp + "," +
-    shoulder_stp + "," +
-    q3 + "," +
-    q4 + "," +
-    q5 + "," +
-    q6 + "," +
+    velocity + "," + 
+    base_stp*scales[0] + "," +
+    shoulder_stp*scales[1] + "," +
+    q3*scales[2] + "," +
+    q4*scales[3] + "," +
+    q5*scales[4] + "," +
+    q6*scales[5] + "," +
     outputs + "\n";
 
     feed_wdt();
@@ -72,16 +74,7 @@ function home_arm(){
 }
 
 function uart_recv(data) {
-    if (!data || !data.length) return;
-
-    if (data.length === 1 && (data.charCodeAt(0) & 0xff) === 0xf1)
-    {
-        return;
-    }
-
-    if (last_response != data){
-        last_response = data;
-    }
+    last_response = data;
     print(data);
 }
 
@@ -148,4 +141,64 @@ function init() {
 
 init();
 
+
+let sequence = [
+  {
+    delay: 7000,
+    fn: function () {
+      step(100, 0, 0, 0, 0, 0, 0);
+      print("Step 1 executed");
+    }
+  },
+  {
+    delay: 7000,
+    fn: function () {
+      step(100, -500, -250, 400, 0, 0, 0);
+      print("Step 2 executed");
+    }
+  },
+  {
+    delay: 7000,
+    fn: function () {
+      step(100, -500, -100, 400, 0, 0, 0);
+      print("Step 3 executed");
+    }
+  },
+  {
+    delay: 7000,
+    fn: function () {
+      step(100, 0, 0, 0, 0, 0, 0);
+      print("Return to home.");
+    }
+  }
+];
+
+let index = 0;
+
+function go_for_candy() {
+  // Reset index in case the function is called again.
+  index = 0;
+
+  function runNextStep() {
+    if (index >= sequence.length) {
+      print("🍬 Candy mission finished!");
+      return; // stops completely
+    }
+
+    let item = sequence[index++];
+
+    // Execute step
+    item.fn();
+
+    // Schedule next step after this step's delay
+    Timer.set(item.delay, false, runNextStep);
+  }
+
+  // Start sequence
+  runNextStep();
+}
+
+// go_for_candy();
 // step(100, 0, 0, 0, 0, 0, 0);
+// step(100, -500, -250, 400, 0, 0, 0);
+// step(100, -500, -100, 400, 0, 0, 0);
