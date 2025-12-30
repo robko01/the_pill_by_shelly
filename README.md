@@ -10,9 +10,9 @@ This repository contains a robotic arm control implementation for Shelly devices
 
 ## Project Structure
 
-- `robko01_web_tcm.shelly.js` — TCM endpoint implementation
-- `robko01_vc_tcm.shelly.js` — Voice control module
-- `ui_config.shelly.js` — UI configuration
+- `robko01_web_tcm.shelly.js` — TCM endpoint implementation (HTTP API for arm control)
+- `robko01_vc_tcm.shelly.js` — Voice control module (virtual components interface)
+- `robko01_vc_components.shelly.js` — Setup script that creates virtual UI components (run once)
 - `tcm_curl_example.md` — curl API examples
 - `tcm_requests_example.md` — Python API examples
 
