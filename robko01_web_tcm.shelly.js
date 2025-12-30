@@ -153,7 +153,7 @@ function init() {
           free();
         } else if (cmd == "close_gripper") {
           close_gripper();
-        } else if (cmd == "set_speed") {
+        } else if (cmd == "set") {
           let velocity = parseInt(qargs["velocity"] || "100");
           set_arm_speed(velocity);
         } else {
