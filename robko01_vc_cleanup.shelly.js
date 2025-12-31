@@ -106,6 +106,7 @@ function stopScript() {
     function(result, error_code, error_msg) {
       if (error_code === 0) {
         print("✓ Cleanup script disabled successfully.");
+        die(); // Stop the script
       } else {
         print("Script.SetConfig failed:", error_msg, "- attempting Script.Stop");
         Shelly.call("Script.Stop", { id: Shelly.getCurrentScriptId() }, function(r2, e2, m2) {

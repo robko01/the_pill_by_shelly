@@ -1,34 +1,45 @@
 // Created with the help of Ivanushka (ChatGPT)
 //
 // Shelly Script: Virtual UI Auto-Setup for Robko01
-// - Creates ALL needed virtual “graphical components” (numbers + buttons)
-// - Creates TWO virtual Groups and puts everything inside them
-//
-// Fix in this version:
-// - Force ui.view for numbers/buttons so they are NOT Hidden (so they appear in the UI)
+// - Virtual Components & Groups are fully declared in DESIRED
+// - Group membership/relations are declared in DESIRED.groups
+// - Script creates components, forces UI visibility, then populates groups
 
 /*** CONFIG ***/
-let WIPE_EXISTING_VIRTUALS = true;   // set false if you don’t want deletions
-let GROUP_ID_EXPECTED = 200;         // we expect group:200 after wipe+create (best-effort)
+let WIPE_EXISTING_VIRTUALS = true;  // set false if you don’t want deletions
 
-/*** Desired components (order matters for stable IDs after wipe) ***/
-let DESIRED = [
-  // Numbers (expect: number:200..205)
-  { type: "number", name: "Base (steps)" },
-  { type: "number", name: "Shoulder (steps)" },
-  { type: "number", name: "Elbow (steps)" },
-  { type: "number", name: "P (steps)" },
-  { type: "number", name: "R (steps)" },
-  { type: "number", name: "Gripper (steps)" },
+/*** DESIRED: all Virtual-component-related stuff exported here ***/
+let DESIRED = {
+  // 1) Components: define everything, including ui config
+  components: [
+    // Numbers
+    { alias: "j_base",     type: "number", name: "Base (steps)",     ui: { view: "slider", unit: "steps", step: 1, min: -500, max: 500 } },
+    { alias: "j_shoulder", type: "number", name: "Shoulder (steps)", ui: { view: "slider", unit: "steps", step: 1, min: -500, max: 500 } },
+    { alias: "j_elbow",    type: "number", name: "Elbow (steps)",    ui: { view: "slider", unit: "steps", step: 1, min: -500, max: 500 } },
+    { alias: "j_p",        type: "number", name: "P (steps)",        ui: { view: "slider", unit: "steps", step: 1, min: -500, max: 500 } },
+    { alias: "j_r",        type: "number", name: "R (steps)",        ui: { view: "slider", unit: "steps", step: 1, min: -500, max: 500 } },
+    { alias: "j_grip",     type: "number", name: "Gripper (steps)",  ui: { view: "slider", unit: "steps", step: 1, min: -500, max: 500 } },
 
-  // Buttons (expect: button:200..201)
-  { type: "button", name: "GO" },
-  { type: "button", name: "CLEAR" },
+    // Buttons
+    { alias: "btn_go",     type: "button", name: "GO",    ui: { view: "button" } },
+    { alias: "btn_clear",  type: "button", name: "CLEAR", ui: { view: "button" } },
 
-  // Groups (expect: group:200..201)
-  { type: "group", name: "Jog" },
-  { type: "group", name: "Actions" },
-];
+    // Groups (declared as components too, so creation is uniform)
+    { alias: "grp_jog",     type: "group", name: "Jog" },
+    { alias: "grp_actions", type: "group", name: "Actions" },
+  ],
+
+  // 2) Relations: define which aliases go into which group alias
+  groups: [
+    { group: "grp_jog", members: ["j_base", "j_shoulder", "j_elbow", "j_p", "j_r", "j_grip"] },
+    { group: "grp_actions", members: ["btn_go", "btn_clear"] },
+  ],
+
+  // 3) Post-create defaults (optional)
+  defaults: {
+    numbers_to_zero: true,
+  }
+};
 
 /*** Helpers ***/
 function rpc(method, params, cb) {
@@ -48,15 +59,6 @@ function nextTick(fn, delay_ms) {
 
 function startsWith(s, p) { return s && s.indexOf(p) === 0; }
 
-/*** Step 1: list existing components ***/
-function getAllComponents(cb) {
-  rpc("Shelly.GetComponents", {}, function (res, e) {
-    if (e) return cb([]);
-    let arr = (res && res.components) ? res.components : [];
-    cb(arr);
-  });
-}
-
 function isVirtualKey(k) {
   return (
     startsWith(k, "number:") ||
@@ -68,7 +70,16 @@ function isVirtualKey(k) {
   );
 }
 
-/*** Step 2: optionally wipe existing virtual components (to guarantee IDs) ***/
+/*** Step 1: list existing components ***/
+function getAllComponents(cb) {
+  rpc("Shelly.GetComponents", {}, function (res, e) {
+    if (e) return cb([]);
+    let arr = (res && res.components) ? res.components : [];
+    cb(arr);
+  });
+}
+
+/*** Step 2: optionally wipe existing virtual components ***/
 function wipeVirtuals(components, done) {
   if (!WIPE_EXISTING_VIRTUALS) return done();
 
@@ -93,70 +104,73 @@ function wipeVirtuals(components, done) {
   delNext();
 }
 
-/*** UI configs to make components VISIBLE (not Hidden) ***/
-function desiredConfig(d) {
-  if (d.type === "number") {
-    // Number ui.view supports: field, slider, progressbar, label... :contentReference[oaicite:2]{index=2}
-    return { name: d.name, ui: { view: "field", unit: "steps", step: 1 } };
-  }
-  if (d.type === "button") {
-    // Button view options include Button vs Hidden in Shelly UI docs. :contentReference[oaicite:3]{index=3}
-    return { name: d.name, ui: { view: "button" } };
-  }
-  if (d.type === "group") {
-    return { name: d.name };
-  }
-  return { name: d.name };
+/*** Config building ***/
+function buildVirtualAddConfig(item) {
+  // Virtual.Add expects {type, config:{...}}
+  // We keep config minimal but include ui when provided.
+  let cfg = { name: item.name };
+  if (item.ui) cfg.ui = item.ui;
+  return cfg;
 }
 
-function forceVisibleConfig(type, id, name, cb) {
-  // Some firmwares accept ui fields on Virtual.Add, some don’t.
-  // So we ALSO call <Type>.SetConfig after creation.
-  if (type === "number") {
-    rpc("Number.SetConfig", {
-      id: id,
-      config: { name: name, ui: { view: "field", unit: "steps", step: 1 } }
-    }, function () { cb && cb(); });
+function forceConfig(item, newId, cb) {
+  // After creation, force config with SetConfig (to ensure ui is applied even if Virtual.Add ignores it)
+  // Use the SAME config fields as desired (including min/max for sliders).
+  let cfg = { name: item.name };
+  if (item.ui) cfg.ui = item.ui;
+
+  if (item.type === "number") {
+    rpc("Number.SetConfig", { id: newId, config: cfg }, function () { cb && cb(); });
     return;
   }
-
-  if (type === "button") {
-    // If Button.SetConfig is not supported on your device/firmware, this will error,
-    // but we ignore it (component will still exist).
-    rpc("Button.SetConfig", {
-      id: id,
-      config: { name: name, ui: { view: "button" } }
-    }, function () { cb && cb(); });
+  if (item.type === "button") {
+    rpc("Button.SetConfig", { id: newId, config: cfg }, function () { cb && cb(); });
     return;
   }
-
+  if (item.type === "group") {
+    // Group config is usually just name; Group.Set sets membership
+    // Some firmwares may have Group.SetConfig but not needed here.
+    cb && cb();
+    return;
+  }
   cb && cb();
 }
 
 /*** Step 3: create desired components in order ***/
-let createdKeys = [];
+let created = {
+  // alias -> { key: "number:200", id:200, type:"number", name:"..." }
+  byAlias: {}
+};
 
-function createDesired(done) {
+function createAll(done) {
+  let items = DESIRED.components;
   let i = 0;
 
   function addNext() {
-    if (i >= DESIRED.length) return done();
+    if (i >= items.length) return done();
 
-    let d = DESIRED[i++];
-    let cfg = desiredConfig(d);
+    let item = items[i++];
+    let cfg = buildVirtualAddConfig(item);
 
-    rpc("Virtual.Add", { type: d.type, config: cfg }, function (res, e) {
+    rpc("Virtual.Add", { type: item.type, config: cfg }, function (res, e) {
       if (!e && res && typeof res.id === "number") {
-        let key = d.type + ":" + res.id;
-        createdKeys.push(key);
-        print("Created:", key, "name=", d.name);
+        let key = item.type + ":" + res.id;
 
-        // Force UI visibility (not Hidden)
-        forceVisibleConfig(d.type, res.id, d.name, function () {
+        created.byAlias[item.alias] = {
+          key: key,
+          id: res.id,
+          type: item.type,
+          name: item.name
+        };
+
+        print("Created:", item.alias, "=>", key, "name=", item.name);
+
+        // Force config (visibility etc.)
+        forceConfig(item, res.id, function () {
           nextTick(addNext, 120);
         });
       } else {
-        print("Failed creating type=", d.type, "name=", d.name);
+        print("Failed creating:", item.alias, "type=", item.type, "name=", item.name);
         nextTick(addNext, 120);
       }
     });
@@ -165,56 +179,57 @@ function createDesired(done) {
   addNext();
 }
 
-/*** Step 4: set group contents (multiple groups) ***/
-function setupGroup(done) {
-  let jogGroup = null;
-  let actionsGroup = null;
+/*** Step 4: build groups from DESIRED.groups relations ***/
+function setupGroups(done) {
+  let rels = DESIRED.groups;
+  let idx = 0;
 
-  let numbers = [];
-  let buttons = [];
+  function setNextGroup() {
+    if (idx >= rels.length) return done();
 
-  for (let i = 0; i < createdKeys.length; i++) {
-    let k = createdKeys[i];
-
-    if (startsWith(k, "group:")) {
-      if (!jogGroup) jogGroup = k;
-      else actionsGroup = k;
-    } else if (startsWith(k, "number:")) {
-      numbers.push(k);
-    } else if (startsWith(k, "button:")) {
-      buttons.push(k);
+    let r = rels[idx++];
+    let grp = created.byAlias[r.group];
+    if (!grp) {
+      print("Group alias not created:", r.group);
+      return nextTick(setNextGroup, 80);
     }
-  }
 
-  function setGroup(groupKey, members, cb) {
-    if (!groupKey) return cb();
-    let gid = parseInt(groupKey.split(":")[1]);
-    print("Setting group", groupKey, "members:", JSON.stringify(members));
-    rpc("Group.Set", { id: gid, value: members }, cb);
-  }
+    let members = [];
+    for (let i = 0; i < r.members.length; i++) {
+      let m = created.byAlias[r.members[i]];
+      if (m) members.push(m.key);
+      else print("Missing member alias:", r.members[i], "for group:", r.group);
+    }
 
-  setGroup(jogGroup, numbers, function () {
-    setGroup(actionsGroup, buttons, function () {
-      done();
+    print("Setting group", grp.key, "members:", JSON.stringify(members));
+    rpc("Group.Set", { id: grp.id, value: members }, function () {
+      nextTick(setNextGroup, 120);
     });
-  });
+  }
+
+  setNextGroup();
 }
 
-/*** Step 5: initialize number values to 0 ***/
-function initNumbersToZero(done) {
-  let nums = [];
-  for (let i = 0; i < createdKeys.length; i++) {
-    if (startsWith(createdKeys[i], "number:")) nums.push(createdKeys[i]);
+/*** Step 5: initialize number values ***/
+function initNumbers(done) {
+  if (!DESIRED.defaults || !DESIRED.defaults.numbers_to_zero) return done();
+
+  // iterate aliases and set numbers to 0
+  let aliases = [];
+  for (let i = 0; i < DESIRED.components.length; i++) {
+    let it = DESIRED.components[i];
+    if (it.type === "number") aliases.push(it.alias);
   }
 
   let idx = 0;
   function setNext() {
-    if (idx >= nums.length) return done();
+    if (idx >= aliases.length) return done();
 
-    let key = nums[idx++];
-    let id = parseInt(key.split(":")[1]);
+    let a = aliases[idx++];
+    let obj = created.byAlias[a];
+    if (!obj) return nextTick(setNext, 60);
 
-    rpc("Number.Set", { id: id, value: 0 }, function () {
+    rpc("Number.Set", { id: obj.id, value: 0 }, function () {
       nextTick(setNext, 60);
     });
   }
@@ -224,13 +239,14 @@ function initNumbersToZero(done) {
 /*** Main ***/
 function run() {
   print("=== Robko01 Virtual UI Auto-Setup starting ===");
+
   getAllComponents(function (components) {
     wipeVirtuals(components, function () {
-      createDesired(function () {
-        setupGroup(function () {
-          initNumbersToZero(function () {
-            print("✅ Done. You should now see groups: Jog, Actions");
-            print("Created keys:", JSON.stringify(createdKeys));
+      createAll(function () {
+        setupGroups(function () {
+          initNumbers(function () {
+            print("✅ Done. Groups should be visible: Jog, Actions");
+            die();
           });
         });
       });
