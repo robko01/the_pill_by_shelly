@@ -13,12 +13,12 @@ let DESIRED = {
   // 1) Components: define everything, including ui config
   components: [
     // Numbers
-    { alias: "j_base",     type: "number", name: "Base (steps)",     ui: { view: "slider", unit: "steps", step: 1, min: -500, max: 500 } },
-    { alias: "j_shoulder", type: "number", name: "Shoulder (steps)", ui: { view: "slider", unit: "steps", step: 1, min: -500, max: 500 } },
-    { alias: "j_elbow",    type: "number", name: "Elbow (steps)",    ui: { view: "slider", unit: "steps", step: 1, min: -500, max: 500 } },
-    { alias: "j_p",        type: "number", name: "P (steps)",        ui: { view: "slider", unit: "steps", step: 1, min: -500, max: 500 } },
-    { alias: "j_r",        type: "number", name: "R (steps)",        ui: { view: "slider", unit: "steps", step: 1, min: -500, max: 500 } },
-    { alias: "j_grip",     type: "number", name: "Gripper (steps)",  ui: { view: "slider", unit: "steps", step: 1, min: -500, max: 500 } },
+    { alias: "j_base",     type: "number", name: "Base (steps)",     ui: { view: "slider", unit: "steps", step: 1 }, min: -500, max: 500, default_value: 0, },
+    { alias: "j_shoulder", type: "number", name: "Shoulder (steps)", ui: { view: "slider", unit: "steps", step: 1 }, min: -500, max: 500, default_value: 0, },
+    { alias: "j_elbow",    type: "number", name: "Elbow (steps)",    ui: { view: "slider", unit: "steps", step: 1 }, min: -500, max: 500, default_value: 0, },
+    { alias: "j_p",        type: "number", name: "P (steps)",        ui: { view: "slider", unit: "steps", step: 1 }, min: -500, max: 500, default_value: 0, },
+    { alias: "j_r",        type: "number", name: "R (steps)",        ui: { view: "slider", unit: "steps", step: 1 }, min: -500, max: 500, default_value: 0, },
+    { alias: "j_grip",     type: "number", name: "Gripper (steps)",  ui: { view: "slider", unit: "steps", step: 1 }, min: -500, max: 500, default_value: 0, },
 
     // Buttons
     { alias: "btn_go",     type: "button", name: "GO",    ui: { view: "button" } },
@@ -110,8 +110,9 @@ function buildVirtualAddConfig(item) {
   // We keep config minimal but include ui when provided.
   let cfg = { name: item.name, meta: {} };
   if (item.ui) cfg.meta.ui = item.ui;
-  if (item.ui) cfg.min = item.ui.min;
-  if (item.ui) cfg.max = item.ui.max;
+  if (item.min) cfg.min = item.min;
+  if (item.max) cfg.max = item.max;
+  if (item.default_value) cfg.default_value = item.default_value;
   return cfg;
 }
 
