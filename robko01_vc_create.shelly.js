@@ -108,8 +108,10 @@ function wipeVirtuals(components, done) {
 function buildVirtualAddConfig(item) {
   // Virtual.Add expects {type, config:{...}}
   // We keep config minimal but include ui when provided.
-  let cfg = { name: item.name };
-  if (item.ui) cfg.ui = item.ui;
+  let cfg = { name: item.name, meta: {} };
+  if (item.ui) cfg.meta.ui = item.ui;
+  if (item.ui) cfg.min = item.ui.min;
+  if (item.ui) cfg.max = item.ui.max;
   return cfg;
 }
 
