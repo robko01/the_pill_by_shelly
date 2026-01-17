@@ -91,15 +91,14 @@ the_pill_by_shelly/
 
 ## Git Workflow
 
-**Branches:**
-- `main` - Production-ready code
-- `dev` - Integration branch
-- `feature/` - Individual feature development
+### Branching Strategy
+- **main**: Production-ready code, only receives merges from dev
+- **dev**: Development branch, created from main, where integration happens
+- **feature branches**: Created from dev for each new feature or change
 
-**Commit Protocol:**
-- "One file per commit" for change tracking
-- Descriptive messages explaining what and why
-- Atomic, logically grouped changes
+### Branch Naming
+- Feature branches: `feature/<short-description>` (e.g., `feature/add-dimmer-support`)
+- Bug fixes: `fix/<short-description>` (e.g., `fix/mac-validation`)
 
 ## Device Compatibility
 - Shelly Gen2/Gen3 devices
