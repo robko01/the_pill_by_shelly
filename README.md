@@ -27,7 +27,7 @@ the_pill_by_shelly/
 |       `-- robko01_uart_test.shelly.js
 |-- tcm_curl_example.md
 |-- tcm_requests_example.md
-|-- CLAUDE.md
+|-- AGENTS.md
 `-- README.md
 ```
 
@@ -74,7 +74,7 @@ Both examples include complete documentation of all supported commands, paramete
 
 ## Development
 
-See [CLAUDE.md](CLAUDE.md) for coding standards, naming conventions, and contribution guidelines.
+See [AGENTS.md](AGENTS.md) for coding standards, naming conventions, and contribution guidelines.
 
 ## License
 

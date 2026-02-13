@@ -21,7 +21,7 @@ the_pill_by_shelly/
 |       `-- robko01_uart_test.shelly.js
 |-- tcm_curl_example.md
 |-- tcm_requests_example.md
-|-- CLAUDE.md
+|-- AGENTS.md
 `-- README.md
 ```
 
