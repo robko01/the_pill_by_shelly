@@ -74,7 +74,9 @@ Both examples include complete documentation of all supported commands, paramete
 
 ## Development
 
-See [AGENTS.md](AGENTS.md) for coding standards, naming conventions, and contribution guidelines.
+See [AGENTS.md](AGENTS.md) for coding standards and conventions.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ## License
 
