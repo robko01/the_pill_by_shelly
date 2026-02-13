@@ -1,4 +1,4 @@
-# The Pill by Shelly
+﻿# The Pill by Shelly
 
 ## About The Pill
 
@@ -12,16 +12,23 @@ This repository contains a robotic arm control implementation for Shelly devices
 
 ```
 the_pill_by_shelly/
-├── robko01_web_tcm.shelly.js     # HTTP API endpoint for remote arm control
-├── robko01_vc_tcm.shelly.js      # Virtual component UI control
-├── robko01_vc_create.shelly.js   # Setup script for virtual UI components (run once)
-├── robko01_vc_cleanup.shelly.js  # Cleanup script for virtual components
-├── robko01_go_for_candy.shelly.js # Demo movement sequence
-├── robko01_uart_test.shelly.js   # UART connectivity test
-├── tcm_curl_example.md           # API docs with curl examples
-├── tcm_requests_example.md       # API docs with Python examples
-├── CLAUDE.md                     # Project coding standards and conventions
-└── README.md                     # Project documentation
+|-- scripts/
+|   |-- tcm/
+|   |   |-- robko01_web_tcm.shelly.js
+|   |   `-- robko01_vc_tcm.shelly.js
+|   |-- vc/
+|   |   |-- robko01_vc_create.shelly.js
+|   |   `-- robko01_vc_cleanup.shelly.js
+|   |-- modbus/
+|   |   |-- robko01_modbus_example.shelly.js
+|   |   `-- robko01_vc_modbus.shelly.js
+|   `-- examples/
+|       |-- robko01_go_for_candy.shelly.js
+|       `-- robko01_uart_test.shelly.js
+|-- tcm_curl_example.md
+|-- tcm_requests_example.md
+|-- CLAUDE.md
+`-- README.md
 ```
 
 ## Key Features
@@ -35,8 +42,8 @@ the_pill_by_shelly/
 
 The robotic arm is controlled via the TCM (Teach/Control Module) endpoint. For detailed information on how to use the API, refer to the example documentation:
 
-- **[curl examples](tcm_curl_example.md)** — Control the arm using curl commands from the command line
-- **[Python examples](tcm_requests_example.md)** — Integrate arm control into Python applications using the requests library
+- **[curl examples](tcm_curl_example.md)** вЂ” Control the arm using curl commands from the command line
+- **[Python examples](tcm_requests_example.md)** вЂ” Integrate arm control into Python applications using the requests library
 
 Both examples include complete documentation of all supported commands, parameter configuration, response formats, and working code samples.
 
@@ -60,8 +67,8 @@ Both examples include complete documentation of all supported commands, paramete
 
 ## Getting Started
 
-1. Upload `robko01_vc_create.shelly.js` and run it once to create virtual UI components
-2. Upload `robko01_web_tcm.shelly.js` for HTTP API control, or `robko01_vc_tcm.shelly.js` for UI control
+1. Upload `scripts/vc/robko01_vc_create.shelly.js` and run it once to create virtual UI components
+2. Upload `scripts/tcm/robko01_web_tcm.shelly.js` for HTTP API control, or `scripts/tcm/robko01_vc_tcm.shelly.js` for UI control
 3. Connect the Shelly device to the TCM via UART (9600 baud, 8N1)
 4. Use the API or UI to control the robotic arm
 
@@ -72,3 +79,4 @@ See [CLAUDE.md](CLAUDE.md) for coding standards, naming conventions, and contrib
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
+
