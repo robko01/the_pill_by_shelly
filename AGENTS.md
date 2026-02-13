@@ -1,4 +1,4 @@
-# Robko01 Shelly Pill Project - Complete Reference
+﻿# Robko01 Shelly Pill Project - Complete Reference
 
 ## Overview
 This project contains JavaScript scripts for Shelly Gen2/Gen3 smart home devices that control a Robko01 6-DOF robotic arm via the Teach/Control Module (TCM) protocol over UART serial communication.
@@ -6,15 +6,23 @@ This project contains JavaScript scripts for Shelly Gen2/Gen3 smart home devices
 ## Project Structure
 ```
 the_pill_by_shelly/
-├── robko01_web_tcm.shelly.js     # HTTP API endpoint for remote control
-├── robko01_vc_tcm.shelly.js      # Virtual component UI control
-├── robko01_vc_create.shelly.js   # Setup script for virtual UI components
-├── robko01_vc_cleanup.shelly.js  # Cleanup script for virtual components
-├── robko01_go_for_candy.shelly.js # Demo movement sequence
-├── robko01_uart_test.shelly.js   # UART connectivity test
-├── tcm_curl_example.md           # API docs with curl examples
-├── tcm_requests_example.md       # API docs with Python examples
-└── README.md                     # Project documentation
+|-- scripts/
+|   |-- tcm/
+|   |   |-- robko01_web_tcm.shelly.js
+|   |   `-- robko01_vc_tcm.shelly.js
+|   |-- vc/
+|   |   |-- robko01_vc_create.shelly.js
+|   |   `-- robko01_vc_cleanup.shelly.js
+|   |-- modbus/
+|   |   |-- robko01_modbus_example.shelly.js
+|   |   `-- robko01_vc_modbus.shelly.js
+|   `-- examples/
+|       |-- robko01_go_for_candy.shelly.js
+|       `-- robko01_uart_test.shelly.js
+|-- tcm_curl_example.md
+|-- tcm_requests_example.md
+|-- AGENTS.md
+`-- README.md
 ```
 
 ## Key Features
@@ -188,3 +196,4 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 - Robko01 6-DOF Robotic Arm
 - TCM (Teach/Control Module)
 - The Pill (Shelly device with UART)
+

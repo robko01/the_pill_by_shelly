@@ -1,5 +1,5 @@
 // Virtual components cleanup for Robko01 TCM voice control
-// This script removes ALL virtual components and groups created by robko01_vc_components.shelly.js
+// This script removes ALL virtual components and groups created by scripts/vc/robko01_vc_create.shelly.js
 // Use this to reset and start fresh
 
 function cleanupAllComponents() {
